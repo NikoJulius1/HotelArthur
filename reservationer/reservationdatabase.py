@@ -6,7 +6,7 @@ cursor = conn.cursor()
 
 # Create the 'products' table if it doesn't already exist
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS products (
+    CREATE TABLE IF NOT EXISTS booking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         roomnumber INTEGER NOT NULL, 
         category TEXT CHECK(category IN (
@@ -42,7 +42,7 @@ def insert_booking(roomnumber, category, isbooking, checkin, checkout):
         return
     
     cursor.execute('''
-        INSERT INTO products (roomnumber, category, isbooking, checkin, checkout)
+        INSERT INTO booking (roomnumber, category, isbooking, checkin, checkout)
         VALUES (?, ?, ?, ?, ?)
     ''', (roomnumber, category, isbooking, checkin, checkout))
     conn.commit()
@@ -50,10 +50,3 @@ def insert_booking(roomnumber, category, isbooking, checkin, checkout):
 
 # Close the database connection
 conn.close()
-
-  
-
-
-
-
-
