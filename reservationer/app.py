@@ -1,10 +1,14 @@
 
 import sqlite3
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
 
 #Connect til databasen
 conn = sqlite3.connect('reservation_database.db')
 cursor = conn.cursor()
 
+@app.route('/bookings', methods=['GET'])
 def isAvailable(roomnumber, checkin, checkout):
     cursor.execute('''
                    SELECT * FROM booking
@@ -18,6 +22,7 @@ def isAvailable(roomnumber, checkin, checkout):
     else:
         return True   # Room is available
     
+@app.route('/bookings/<int:booking_id>', methods=['PUT'])    
 def makeBooking(roomnumber, category, checkin, checkout):
     if isAvailable(roomnumber, checkin, checkout):
 
