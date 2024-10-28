@@ -4,9 +4,9 @@ import sqlite3
 conn = sqlite3.connect('reservation_database.db')
 cursor = conn.cursor()
 
-# Create the 'products' table if it doesn't already exist
+# Create the  table if it doesn't already exist
 cursor.execute('''
-    CREATE TABLE IF NOT EXISTS products (
+    CREATE TABLE IF NOT EXISTS booking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         roomnumber INTEGER NOT NULL, 
         category TEXT CHECK(category IN (
