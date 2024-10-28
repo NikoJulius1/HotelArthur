@@ -42,7 +42,7 @@ def insert_booking(roomnumber, category, isbooking, checkin, checkout):
         return
     
     cursor.execute('''
-        INSERT INTO products (roomnumber, category, isbooking, checkin, checkout)
+        INSERT INTO booking (roomnumber, category, isbooking, checkin, checkout)
         VALUES (?, ?, ?, ?, ?)
     ''', (roomnumber, category, isbooking, checkin, checkout))
     conn.commit()
@@ -50,10 +50,3 @@ def insert_booking(roomnumber, category, isbooking, checkin, checkout):
 
 # Close the database connection
 conn.close()
-
-  
-
-
-
-
-
