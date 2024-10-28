@@ -47,6 +47,8 @@ def insert_booking(roomnumber, category, isbooking, checkin, checkout):
     ''', (roomnumber, category, isbooking, checkin, checkout))
     conn.commit()
 
+insert_booking(101, 'Standard single room', 1, '2024-11-01 14:00:00', '2024-11-05 12:00:00')
+
 
 # Close the database connection
 conn.close()
