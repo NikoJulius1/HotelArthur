@@ -1,63 +1,74 @@
-
 import sqlite3
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
 
-#Connect til databasen
-conn = sqlite3.connect('reservation_database.db')
-cursor = conn.cursor()
+# Connect to the SQLite database
+def get_db_connection():
+    return sqlite3.connect('reservation_database.db')
 
-@app.route('/bookings', methods=['GET'])
+# Check room availability
 def isAvailable(roomnumber, checkin, checkout):
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute('''
-                   SELECT * FROM booking
-                   WHERE roomnumber = ?
-                   AND checkin < ?
-                   AND checkout > ?
-                   ''', (roomnumber, checkout, checkin))
+        SELECT * FROM booking
+        WHERE roomnumber = ?
+        AND checkin < ?
+        AND checkout > ?
+    ''', (roomnumber, checkout, checkin))
     overlapping_bookings = cursor.fetchall()
-    if overlapping_bookings:
-        return False  # Room is not available
-    else:
-        return True   # Room is available
-    
-@app.route('/bookings/<int:booking_id>', methods=['PUT'])    
-def makeBooking(roomnumber, category, checkin, checkout):
+    conn.close()
+    return len(overlapping_bookings) == 0
+
+# List all bookings
+@app.route('/bookings', methods=['GET'])
+def list_bookings():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM booking')
+    bookings = cursor.fetchall()
+    conn.close()
+    return jsonify(bookings)
+
+# Create a new booking
+@app.route('/bookings', methods=['POST'])
+def create_booking():
+    data = request.get_json()
+    roomnumber = data['roomnumber']
+    category = data['category']
+    checkin = data['checkin']
+    checkout = data['checkout']
+
     if isAvailable(roomnumber, checkin, checkout):
-
-        print(f"Inserting: {roomnumber}, {category}, {checkin}, {checkout}")
-
-
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO booking (roomnumber, category, isbooking, checkin, checkout)
-            VALUES (?, ?, ?, ?, ?)
-                       ''', (roomnumber, category, 1, checkin, checkout))
-        
-        # Gem ændringerne i databasen
+            VALUES (?, ?, 1, ?, ?)
+        ''', (roomnumber, category, checkin, checkout))
         conn.commit()
-
-        return "Værelse reserveret"
+        conn.close()
+        return jsonify({"message": "Booking created successfully"}), 201
     else:
-        return "Værelse ikk tilgængelig"
+        return jsonify({"message": "Room not available"}), 409
 
+# Export bookings in CSV format
+@app.route('/bookings/export/csv', methods=['GET'])
+def export_bookings_csv():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM booking')
+    rows = cursor.fetchall()
+    conn.close()
 
-roomnumber = 101
-category = 'Standard single room'
-checkin = '2024-11-01 14:00:00'
-checkout = '2024-11-05 11:00:00'
+    # Convert rows to CSV format
+    csv_data = "id,roomnumber,category,isbooking,checkin,checkout\n"
+    for row in rows:
+        csv_data += ",".join(str(item) for item in row) + "\n"
 
-# Call makeBooking to attempt a reservation
-result = makeBooking(roomnumber, category, checkin, checkout)
-print(result)  # Should print "Værelse reserveret" or "Værelse ikke tilgængelig"
+    return Response(csv_data, mimetype='text/csv',
+                    headers={"Content-Disposition": "attachment;filename=bookings.csv"})
 
-# Fetch all rows to verify the insertion
-cursor.execute("SELECT * FROM booking")
-results = cursor.fetchall()
-print(results)  # Should display all bookings in the table, including the new one
-
-result = makeBooking(roomnumber, category, checkin, checkout)
-print(result)  # Should print "Værelse reserveret" or "Værelse ikke tilgængelig"
-
-# Close the connection (good practice)
-conn.close()
+if __name__ == '__main__':
+    app.run(debug=True)
