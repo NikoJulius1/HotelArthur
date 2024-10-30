@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  booking-service:
+    build: ./booking-service
+    networks:
+      - mynetwork
+    ports:
+      - "5001:5000" # Expose the booking service on port 5001 externally
+  
+
+networks:
+  mynetwork:
+    driver: bridge
