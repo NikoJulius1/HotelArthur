@@ -10,7 +10,7 @@ def get_db_connection():
 def notify_billing_service(booking_id):
     try:
         billing_url = f'http://billing-service:5000/bills/update/{booking_id}'
-        response = requests.post(billing_url)
+        response = request.post(billing_url)
         if response.status_code == 200:
             print(f"Billing updated for booking {booking_id}")
         else:
