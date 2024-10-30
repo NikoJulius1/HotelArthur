@@ -7,6 +7,17 @@ app = Flask(__name__)
 def get_db_connection():
     return sqlite3.connect('reservation_database.db')
 
+def notify_billing_service(booking_id):
+    try:
+        billing_url = f'http://billing-service:5000/bills/update/{booking_id}'
+        response = requests.post(billing_url)
+        if response.status_code == 200:
+            print(f"Billing updated for booking {booking_id}")
+        else:
+            print(f"Failed to update billing for booking {booking_id}: {response.json()}")
+    except Exception as e:
+        print(f"Error contacting billing service: {e}")
+
 # Check room availability
 def isAvailable(roomnumber, checkin, checkout):
     conn = get_db_connection()
@@ -48,7 +59,9 @@ def create_booking():
             VALUES (?, ?, 1, ?, ?)
         ''', (roomnumber, category, checkin, checkout))
         conn.commit()
+        booking_id = cursor.lastrowid
         conn.close()
+        notify_billing_service(booking_id)
         return jsonify({"message": "Booking created successfully"}), 201
     else:
         return jsonify({"message": "Room not available"}), 409
@@ -71,4 +84,4 @@ def export_bookings_csv():
                     headers={"Content-Disposition": "attachment;filename=bookings.csv"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5001)
