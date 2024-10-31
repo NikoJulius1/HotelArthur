@@ -20,7 +20,7 @@ cursor.execute('''
             'Loft room'
         )),
         isbooking INTEGER CHECK(isbooking IN (0, 1)),  -- 0 for False, 1 for True,
-        is_cleaned INTEGER DEFAULT 0 CHECK(is_cleaned IN (0, 1)),  -- 0 for not cleaned, 1 for cleaned
+        is_cleaned INTEGER DEFAULT 0 CHECK(is_cleaned IN (0, 1)),  -- 0 for not cleaned, 1 for cleaned,
         checkin DATETIME,
         checkout DATETIME
     )
