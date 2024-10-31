@@ -65,6 +65,21 @@ def create_booking():
         return jsonify({"message": "Booking created successfully"}), 201
     else:
         return jsonify({"message": "Room not available"}), 409
+    
+# Mark booking as done
+@app.route('/bookings/<int:booking_id>/mark_done', methods=['PUT'])
+def mark_booking_done(booking_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE booking 
+        SET is_cleaned = 1 
+        WHERE id = ?
+    ''', (booking_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Booking marked as done"}), 200
+
 
 # Export bookings in CSV format
 @app.route('/bookings/export/csv', methods=['GET'])
